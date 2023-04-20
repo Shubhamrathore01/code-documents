@@ -1,0 +1,28 @@
+//Change theme_preprocess according to your theme.
+function theme_preprocess_node(&$variables) {
+
+//Change 'node' according to your product type
+if ($type == 'node') {
+      // current user role
+      $currentuserId = \Drupal::currentUser()->id();
+
+
+      // Load licenses associated with the current user.
+      $license_ids = \Drupal::entityQuery('commerce_license')
+      ->condition('uid', $currentuserId)
+      ->accessCheck(FALSE)
+      ->condition('state', 'active')
+      ->execute();
+
+      // Loop through each license and do something with it.
+      foreach ($license_ids as $license) {
+        $l = \Drupal::entityTypeManager()->getStorage('commerce_license')->load($license);
+        $role = $l->get('license_role')->getValue()[0]['target_id'];
+        if($role == 'buyer') {
+          $l->set('state', 'expired');
+          $l->save();
+        }
+      }
+  }
+
+}
